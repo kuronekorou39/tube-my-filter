@@ -1,0 +1,26 @@
+{
+  "manifest_version": 3,
+  "name": "Tube My Filter",
+  "version": "0.2.0",
+  "description": "登録したチャンネルの動画カードを、YouTubeの検索結果・ホームで判定・非表示にする自作拡張（試作）",
+  "author": "rou39",
+  "permissions": ["storage"],
+  "content_scripts": [
+    {
+      "matches": ["https://www.youtube.com/*"],
+      "all_frames": false,
+      "run_at": "document_start",
+      "world": "ISOLATED",
+      "css": ["content/hide.css"],
+      "js": ["lib/channel.js", "lib/settings.js", "content/card.js", "content/main.js"]
+    }
+  ],
+  "action": {
+    "default_title": "Tube My Filter",
+    "default_popup": "options/options.html?popup=1"
+  },
+  "options_ui": {
+    "page": "options/options.html",
+    "open_in_tab": true
+  }
+}

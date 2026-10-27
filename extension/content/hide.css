@@ -1,0 +1,14 @@
+/* 非表示モード: 拡張が付けたクラスのカードだけをレイアウトから外す */
+.tmf-hidden {
+  display: none !important;
+}
+
+/* 判定のみモードの目印。outline はレイアウトに影響しない */
+.tmf-match {
+  outline: 3px solid #e53935 !important;
+  outline-offset: 2px;
+}
+.tmf-unknown {
+  outline: 2px dashed #9e9e9e !important;
+  outline-offset: 2px;
+}

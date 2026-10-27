@@ -1,0 +1,14 @@
+# Personal browser data and raw observation evidence
+local-evidence/
+browser-profile/
+*.har
+*.log
+.env
+.env.*
+!.env.example
+
+# Temporary outputs; source and anonymized fixtures remain tracked
+.tmp/
+node_modules/
+coverage/
+dist/
