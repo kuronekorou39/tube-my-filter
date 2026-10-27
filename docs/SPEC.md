@@ -14,7 +14,7 @@
 |---|---|
 | PC版 `www.youtube.com` の検索結果にある通常動画カード | M0/M1の対象 |
 | ホームの通常動画カード | M2で実装（v0.2.0）。セル `ytd-rich-item-renderer` 単位。Shorts・ミックス・再生リストは対象外 |
-| 動画再生ページの関連・次のおすすめの通常動画カード | M2で別途確認。プレイヤーは操作しない |
+| 動画再生ページの関連・次のおすすめの通常動画カード | M2で実装（v0.3.0、方式2）。プレイヤー・自動再生は操作しない |
 | チャンネル検索カード、投稿、コメント、広告、再生リスト、ミックス、複数投稿者のカード | MVP対象外。巻き添えで消さない |
 | Shortsのカード・連続再生画面、直接開いた動画、チャンネルページ全体 | 初期はブロックしない。対象外と明示 |
 | スマホアプリ、テレビアプリ、YouTube Music、埋め込みプレイヤー | 対象外 |
@@ -48,6 +48,8 @@ WindowsのPC版Chromeを最初の検証対象とする。実際のバージョ�
 
 **決定（2026-10-27、M0-01の結果を受けて利用者が選択）:** 識別はDOMのみで行う（方式1）。検索カードのDOMには主に `/@ハンドル` が出るため、ハンドル完全一致が主なルールになる。IDルールは `/channel/UC…` 形式で表示されるカードにだけ一致する。メインワールドからIDを読む方式（方式2）は、方式1の取りこぼしを実測してから再検討する。
 
+**決定（2026-10-28、M2-W01の結果を受けて利用者が選択）:** 再生ページの関連動画はDOMに投稿者リンクがないため、関連動画に限り方式2を採る。メインワールドの `page/owner-bridge.js` が、関連動画セクションのデータの実測経路（RESEARCH.md 7章）から `browseId` と `canonicalBaseUrl` だけを読み、カードの `data-tmf-owner-video/id/handle` 属性に写す。拡張本体（隔離環境）は、属性の動画IDがカードの現在の動画IDと一致するときだけそれを使う。同じデータ項目から得たIDとハンドルは同一チャンネルとして扱い、どちらのルールでも一致させる。経路が見つからない・値が不正な場合は何も書かず、カードは未判定で残る。ページ側スクリプトは chrome API・通信・ページ関数の呼び出しを使わず、拡張が停止中（`<html data-tmf-bridge>` がない）は何もしない。検索・ホームは引き続きDOMのみ。
+
 カード上の登録ボタンはM1の必須条件にしない。まず設定画面から登録できればよい。識別可能性を調べる前に大量のルールやUIを作らない。
 
 ## 5. 非表示処理
@@ -79,7 +81,7 @@ local-evidence/      # Git対象外の実測資料
 
 API権限は `storage` のみを出発点にする。静的注入の `content_scripts.matches` と追加の `host_permissions` は区別し、不要な権限を重ねて宣言しない。`tabs`、`scripting`、Cookie、履歴、ダウンロード、全サイトへの権限、バックグラウンドworkerは必要性が確認されるまで加えない。これらは今回の設計上の選択である。[権限の公式説明](https://developer.chrome.com/docs/extensions/develop/concepts/declare-permissions)
 
-DOMにはアクセスするが、ページの内部JavaScript変数や内部APIを使う設計にはしない。DOM方式で必要な情報が得られない場合は、その結果を示して次の方式を比較する。[Content scripts](https://developer.chrome.com/docs/extensions/develop/concepts/content-scripts)
+DOMにはアクセスするが、ページの内部JavaScript変数や内部APIを使う設計にはしない（関連動画の読み取りのみ例外、4章の決定を参照）。DOM方式で必要な情報が得られない場合は、その結果を示して次の方式を比較する。[Content scripts](https://developer.chrome.com/docs/extensions/develop/concepts/content-scripts)
 
 ## 7. 保存情報と通信
 

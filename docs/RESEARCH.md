@@ -106,3 +106,18 @@ DOMだけで判定する方針（SPEC 6章）では、識別子は実質「ハ�
 | セレクタ検証 | 新しいホームアダプターと同じ判定をページ上で実行: 103セル中、対象外15、識別88/88、未判定0、69チャンネル |
 
 設計への反映: ホームはセル `ytd-rich-item-renderer` を隠す単位にする（中身だけ隠すと空のセルが残るため）。通常動画は「主リンクが `/watch?` で `list` を含まない lockup」と定義し、Shorts・ミックス・再生リストは対象外（skip）とする。
+
+## 7. M2 関連動画（再生ページ）実画面調査（2026-10-28）
+
+実験ID: M2-W01。条件はM0-01と同じ。利用者の許可を得て、ホームに出ていた登録対象外チャンネルの動画を1本開き、200ms間隔でミュート・一時停止した（再生位置0秒を確認）。視聴履歴に1件残った可能性がある。
+
+| 項目 | 結果 |
+|---|---|
+| 位置 | `ytd-watch-flexy #secondary ytd-watch-next-secondary-results-renderer #items > ytd-item-section-renderer #contents` 直下に `yt-lockup-view-model` 20件と `ytd-continuation-item-renderer`。`ytd-compact-video-renderer` は0件、広告0件 |
+| 主リンク | `/watch?` 19件、`list` 付き（ミックス等）1件 |
+| **投稿者リンク** | **0/20件。** チャンネル名はリンクのない `span` の文字列、アバターは `img` のみ（リンクなし） |
+| DOMにある手がかり | 表示名の文字列、アバター画像のURL、aria-label。表示名での判定はAGENTS.md・SPECで禁止。画像URLからチャンネルを特定するには外部情報が必要 |
+| ページ側データ（参考） | `ytd-item-section-renderer` の `.data.contents[].lockupViewModel` に、20/20件で `browseEndpoint.browseId`（UC形式）と `canonicalBaseUrl`（`/@…`）がある。場所は `metadata.lockupMetadataViewModel.image.decoratedAvatarViewModel…onTap.innertubeCommand`。`contentId`（動画ID）でDOMのカードと20/20件対応づけられ、1件あたりのチャンネルは1つ |
+| 自動再生 | 自動再生トグルはオン。関連カードを隠しても次の動画の選択には影響しない見込み（M3の範囲、未検証） |
+
+結論: **関連動画は、DOMだけ（方式1）では投稿者を識別できない。** 対応するには方式2（メインワールドでの読み取り）が必要。表示名での判定はしない。

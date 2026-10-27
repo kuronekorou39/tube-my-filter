@@ -35,7 +35,39 @@
     },
   };
 
-  const ADAPTERS = [SEARCH_ADAPTER, HOME_ADAPTER];
+  function watchVideoId(href) {
+    if (!href || !href.startsWith('/watch?')) return null;
+    return new URLSearchParams(href.slice('/watch?'.length)).get('v');
+  }
+
+  // 再生ページの関連動画: カードにDOM上の投稿者リンクがない（RESEARCH.md 7章）。
+  // メインワールドの page/owner-bridge.js が写した data-tmf-owner-* 属性を読む。
+  const RELATED_ADAPTER = {
+    name: 'related',
+    matchesPath: (p) => p === '/watch',
+    rootSelector: 'ytd-watch-flexy',
+    cardSelector: 'ytd-watch-next-secondary-results-renderer yt-lockup-view-model',
+    isTargetCard(card) {
+      const a = card.querySelector('a[href]');
+      const href = (a && a.getAttribute('href')) || '';
+      return href.startsWith('/watch?') && !/[?&]list=/.test(href);
+    },
+    // 戻り値: 同じチャンネルを指す識別子の配列（ID・ハンドルは同じデータ項目から得たもの）。読めなければ []。
+    readOwnerIdents(card) {
+      const a = card.querySelector('a[href]');
+      const vid = watchVideoId((a && a.getAttribute('href')) || '');
+      // カードが別の動画に再利用され、属性がまだ古い場合は信用しない
+      if (!vid || card.getAttribute('data-tmf-owner-video') !== vid) return [];
+      const out = [];
+      const id = card.getAttribute('data-tmf-owner-id');
+      const handle = card.getAttribute('data-tmf-owner-handle');
+      if (id) out.push(channel.identFromHref('/channel/' + id));
+      if (handle) out.push(channel.identFromHref(handle));
+      return out.filter(Boolean);
+    },
+  };
+
+  const ADAPTERS = [SEARCH_ADAPTER, HOME_ADAPTER, RELATED_ADAPTER];
 
   const HIDDEN_CLASS = 'tmf-hidden';
   // 判定のみモードの目印（枠線だけでレイアウトは変えない）
@@ -47,6 +79,12 @@
   //   skip: その画面の対象種別ではないカード（Shorts・ミックス等）
   function judgeCard(card, rules, adapter = SEARCH_ADAPTER) {
     if (!adapter.isTargetCard(card)) return { status: 'skip' };
+    if (adapter.readOwnerIdents) {
+      const idents = adapter.readOwnerIdents(card);
+      if (idents.length === 0) return { status: 'unknown', reason: 'no-data' };
+      const rule = channel.findRuleForAny(rules, idents);
+      return rule ? { status: 'match', owner: idents[0], rule } : { status: 'nomatch', owner: idents[0] };
+    }
     const hrefs = Array.from(card.querySelectorAll(adapter.ownerLinkSelector), (a) => a.getAttribute('href'));
     const resolved = channel.resolveOwner(hrefs.map(channel.identFromHref));
     if (resolved.status === 'unknown') return { status: 'unknown', reason: resolved.reason };
@@ -74,6 +112,7 @@
   const api = {
     SEARCH_ADAPTER,
     HOME_ADAPTER,
+    RELATED_ADAPTER,
     ADAPTERS,
     HIDDEN_CLASS,
     MATCH_CLASS,

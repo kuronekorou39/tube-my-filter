@@ -71,12 +71,12 @@
     ['identified', '投稿者を識別'],
     ['matched', 'ルールに一致'],
     ['hidden', '非表示中'],
-    ['unknownNoLink', '未判定（リンクなし）'],
+    ['unknownNoLink', '未判定（投稿者情報なし）'],
     ['unknownConflict', '未判定（投稿者が競合）'],
     ['skipped', '対象外（Shorts・ミックス等）'],
     ['maxBatchMs', '最大処理時間(ms)'],
   ];
-  const PAGE_LABEL = { search: '検索結果', home: 'ホーム' };
+  const PAGE_LABEL = { search: '検索結果', home: 'ホーム', related: '関連動画' };
   const MODE_LABEL = { off: '停止', observe: '判定のみ', hide: '非表示', loading: '読込中' };
 
   // ポップアップとして開いたとき、アクティブなYouTubeタブの集計を表示する
@@ -102,7 +102,7 @@
       return;
     }
     if (!(stats.page in PAGE_LABEL)) {
-      note('対象外のページです（検索結果・ホームに対応）');
+      note('対象外のページです（検索結果・ホーム・関連動画に対応）');
       return;
     }
     for (const [key, label] of STATS_LABELS) {

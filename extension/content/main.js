@@ -104,14 +104,20 @@
         childList: true,
         subtree: true,
         attributes: true,
-        attributeFilter: ['href', 'hidden'],
+        // data-tmf-owner-*: 関連動画でメインワールド側が書く投稿者情報
+        attributeFilter: ['href', 'hidden', 'data-tmf-owner-video', 'data-tmf-owner-id', 'data-tmf-owner-handle'],
       });
     }
+    document.documentElement.setAttribute(BRIDGE_ATTR, '');
     lastPath = location.pathname;
     processAll();
   }
 
+  // メインワールドの owner-bridge.js に動作を許可する目印
+  const BRIDGE_ATTR = 'data-tmf-bridge';
+
   function stop() {
+    document.documentElement.removeAttribute(BRIDGE_ATTR);
     if (observer) {
       observer.disconnect();
       observer = null;
@@ -151,7 +157,7 @@
       stats.total++;
       if (v.status === 'unknown') {
         if (v.reason === 'conflict') stats.unknownConflict++;
-        else stats.unknownNoLink++;
+        else stats.unknownNoLink++; // no-link / no-data
         continue;
       }
       stats.identified++;

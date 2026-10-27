@@ -106,7 +106,17 @@
     return rules.find((r) => sameIdent(r, owner)) || null;
   }
 
-  const api = { parseChannelInput, identFromHref, resolveOwner, findMatchingRule, sameIdent };
+  // 同じチャンネルだと確認済みの識別子（同一データ項目のIDとハンドル等）のどれかに一致するルール。
+  // 別々の情報源から集めた識別子をここに混ぜない。
+  function findRuleForAny(rules, idents) {
+    for (const it of idents) {
+      const r = findMatchingRule(rules, it);
+      if (r) return r;
+    }
+    return null;
+  }
+
+  const api = { parseChannelInput, identFromHref, resolveOwner, findMatchingRule, findRuleForAny, sameIdent };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.TMF_channel = api;
 })(globalThis);
