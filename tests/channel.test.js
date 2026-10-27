@@ -74,7 +74,7 @@ test('ルール照合: IDルールはハンドルのカードに一致しない�
 });
 
 test('設定: 壊れた保存値は判定のみ・ルールなしに倒す（T01/T13）', () => {
-  assert.deepEqual(normalizeSettings(undefined), { schemaVersion: 1, mode: 'observe', rules: [] });
+  assert.deepEqual(normalizeSettings(undefined), { schemaVersion: 1, mode: 'observe', rules: [], capture: { dontRecommend: true, notInterested: true }, hideShorts: false });
   const s = normalizeSettings({ mode: 'nuke', rules: [{ type: 'handle', value: 'a' }, { type: 'name', value: 'x' }, null, { type: 'id' }] });
   assert.equal(s.mode, 'observe');
   assert.deepEqual(s.rules, [{ type: 'handle', value: 'a' }]);

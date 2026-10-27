@@ -3,6 +3,11 @@
 (function (root) {
   'use strict';
 
+  function textOf(el) {
+    const t = el && el.textContent ? el.textContent.trim() : '';
+    return t ? t.slice(0, 100) : null;
+  }
+
   const channel = typeof module !== 'undefined' && module.exports ? require('../lib/channel.js') : root.TMF_channel;
 
   // 検索結果: 通常動画カード ytd-video-renderer。投稿者リンクはカード内に3箇所（同じhref）。
@@ -14,6 +19,8 @@
     // カードの投稿者部分のリンクだけを見る。タイトル・説明文中のリンクは使わない。
     ownerLinkSelector: '#channel-info a[href], ytd-channel-name a[href]',
     isTargetCard: () => true,
+    // 一覧の目印にだけ使う表示名（判定には使わない）
+    readOwnerLabel: (card) => textOf(card.querySelector('ytd-channel-name a[href]')),
   };
 
   // ホーム: グリッドのセル ytd-rich-item-renderer を隠す単位にする。
@@ -25,6 +32,7 @@
     rootSelector: 'ytd-browse[page-subtype="home"]',
     cardSelector: 'ytd-rich-item-renderer',
     ownerLinkSelector: 'yt-lockup-view-model yt-content-metadata-view-model a[href]',
+    readOwnerLabel: (card) => textOf(card.querySelector('yt-lockup-view-model yt-content-metadata-view-model a[href]')),
     // 通常動画だけを対象にする。Shorts（別の要素）、ミックス・再生リスト（list付きURL）は対象外
     isTargetCard(card) {
       const lockup = card.querySelector('yt-lockup-view-model');
@@ -46,6 +54,8 @@
     name: 'related',
     matchesPath: (p) => p === '/watch',
     rootSelector: 'ytd-watch-flexy',
+    // 関連動画のチャンネル名はリンクではなく、行の位置も保証がないため表示名は取らない
+    readOwnerLabel: () => null,
     cardSelector: 'ytd-watch-next-secondary-results-renderer yt-lockup-view-model',
     isTargetCard(card) {
       const a = card.querySelector('a[href]');
@@ -83,7 +93,9 @@
       const idents = adapter.readOwnerIdents(card);
       if (idents.length === 0) return { status: 'unknown', reason: 'no-data' };
       const rule = channel.findRuleForAny(rules, idents);
-      return rule ? { status: 'match', owner: idents[0], rule } : { status: 'nomatch', owner: idents[0] };
+      // 登録に使う代表値はハンドルを優先（検索・ホームのカードはハンドルで表示されるため）
+      const owner = idents.find((i) => i.type === 'handle') || idents[0];
+      return rule ? { status: 'match', owner, rule } : { status: 'nomatch', owner };
     }
     const hrefs = Array.from(card.querySelectorAll(adapter.ownerLinkSelector), (a) => a.getAttribute('href'));
     const resolved = channel.resolveOwner(hrefs.map(channel.identFromHref));

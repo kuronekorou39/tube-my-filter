@@ -12,3 +12,17 @@
   outline: 2px dashed #9e9e9e !important;
   outline-offset: 2px;
 }
+
+/* オプション「ショートの棚を非表示」: Shortsのカードを含む棚をまるごと対象にする（RESEARCH.md 9章）。
+   <html data-tmf-shorts> は content/main.js が付ける。hide=非表示、mark=判定のみの目印 */
+html[data-tmf-shorts="hide"] ytd-rich-section-renderer:has(ytm-shorts-lockup-view-model, ytm-shorts-lockup-view-model-v2),
+html[data-tmf-shorts="hide"] grid-shelf-view-model:has(ytm-shorts-lockup-view-model, ytm-shorts-lockup-view-model-v2),
+html[data-tmf-shorts="hide"] ytd-reel-shelf-renderer {
+  display: none !important;
+}
+html[data-tmf-shorts="mark"] ytd-rich-section-renderer:has(ytm-shorts-lockup-view-model, ytm-shorts-lockup-view-model-v2),
+html[data-tmf-shorts="mark"] grid-shelf-view-model:has(ytm-shorts-lockup-view-model, ytm-shorts-lockup-view-model-v2),
+html[data-tmf-shorts="mark"] ytd-reel-shelf-renderer {
+  outline: 3px dashed #e53935 !important;
+  outline-offset: 2px;
+}

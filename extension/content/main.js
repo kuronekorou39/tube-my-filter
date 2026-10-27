@@ -116,6 +116,22 @@
   // メインワールドの owner-bridge.js に動作を許可する目印
   const BRIDGE_ATTR = 'data-tmf-bridge';
 
+  const SHORTS_ATTR = 'data-tmf-shorts';
+  // ショートの棚はCSSだけで扱う（hide.css）。ここでは <html> の目印を切り替えるだけ
+  function applyShortsOption() {
+    const html = document.documentElement;
+    const value = settings && settings.hideShorts && settings.mode !== 'off' ? (settings.mode === 'hide' ? 'hide' : 'mark') : null;
+    if (value) html.setAttribute(SHORTS_ATTR, value);
+    else html.removeAttribute(SHORTS_ATTR);
+  }
+
+  // 棚の数（診断用、要求時だけ数える）
+  const SHORTS_SHELF_SELECTOR = [
+    'ytd-rich-section-renderer:has(ytm-shorts-lockup-view-model, ytm-shorts-lockup-view-model-v2)',
+    'grid-shelf-view-model:has(ytm-shorts-lockup-view-model, ytm-shorts-lockup-view-model-v2)',
+    'ytd-reel-shelf-renderer',
+  ].join(',');
+
   function stop() {
     document.documentElement.removeAttribute(BRIDGE_ATTR);
     if (observer) {
@@ -127,6 +143,7 @@
 
   function applySettings(raw) {
     settings = normalizeSettings(raw);
+    applyShortsOption();
     if (settings.mode === 'off') stop();
     else start();
   }
@@ -144,6 +161,7 @@
       hidden: 0,
       unknownNoLink: 0,
       unknownConflict: 0,
+      shortsShelves: ctx ? ctx.root.querySelectorAll(SHORTS_SHELF_SELECTOR).length : 0,
       batches: perf.batches,
       maxBatchMs: Math.round(perf.maxBatchMs * 10) / 10,
     };
@@ -173,13 +191,16 @@
 
   chrome.storage.onChanged.addListener((changes, area) => {
     if (area !== 'local') return;
-    if (!('mode' in changes) && !('rules' in changes)) return;
+    if (!['mode', 'rules', 'capture', 'hideShorts'].some((k) => k in changes)) return;
     chrome.storage.local.get(null).then(applySettings);
   });
 
   window.addEventListener('popstate', () => {
     if (settings && settings.mode !== 'off') processAll();
   });
+
+  // メニュー連動（content/menu-capture.js）に、今の画面と設定を渡す
+  globalThis.TMF_main = { activeContext, getSettings: () => settings };
 
   // 読込に失敗した場合は settings が null のままで、何も隠さない
   chrome.storage.local.get(null).then(applySettings);

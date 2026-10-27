@@ -121,3 +121,23 @@ DOMだけで判定する方針（SPEC 6章）では、識別子は実質「ハ�
 | 自動再生 | 自動再生トグルはオン。関連カードを隠しても次の動画の選択には影響しない見込み（M3の範囲、未検証） |
 
 結論: **関連動画は、DOMだけ（方式1）では投稿者を識別できない。** 対応するには方式2（メインワールドでの読み取り）が必要。表示名での判定はしない。
+
+## 8. 「⋮」メニューの構造（2026-10-28）
+
+実験ID: M2-H03。ホームの通常動画カードで「⋮」（`button[aria-label="その他の操作"]`、`yt-lockup-metadata-view-model` 内）を開き、項目を読んで閉じた。どの項目も選んでいない。
+
+- メニューはカードの外、`ytd-app > ytd-popup-container > tp-yt-iron-dropdown > … yt-sheet-view-model … yt-list-view-model` に描画される。
+- 項目は `yt-list-item-view-model`（属性は class・role のみ）。表示文字: キューに追加 / [後で見る] に保存 / 再生リストに保存 / オフライン / 共有 / **興味なし** / **チャンネルをおすすめに表示しない** / 報告。
+- アイコン名などの安定した識別属性は見つからなかった → 項目は表示文字で見分けるしかない。英語UIの文言（"Not interested" / "Don't recommend channel"）は未実測。
+- メニューとカードはDOM上つながっていないため、「⋮」を押したカードを拡張側で控えて対応づける。
+- 参考: v0.4.0のホバーボタンが出なかった原因は、ホームでサムネイルにマウスを乗せるとプレビュー再生の要素（カード外）が重なり、マウスがカード外と判定されたため。
+
+## 9. Shortsの棚（2026-10-28）
+
+実験ID: M2-H04。ホームを開いてスクロールし、棚を読み取った。
+
+- ホームのShortsは `ytd-rich-section-renderer > ytd-rich-shelf-renderer` の棚の中にあり、各セルは `ytm-shorts-lockup-view-model-v2`。棚2つ（各5件）、棚の外にあるShortsのセルは0件。
+- 検索結果のShortsは `grid-shelf-view-model` の棚（M0-01で5棚、すべて `ytm-shorts-lockup-view-model` のみ）。
+- CSS `ytd-rich-section-renderer:has(ytm-shorts-lockup-view-model, ytm-shorts-lockup-view-model-v2)` はホームでShortsの棚2つだけに一致。テスト用に `display:none` を当てるとグリッドは詰まって表示され、崩れはなかった（スクリーンショットで確認、テスト用CSSは外した）。
+- 関連動画欄のShorts棚と `ytd-reel-shelf-renderer` は今回未観測。セレクタには含めたが、実在は未確認。
+- 左メニューの「ショート」へのリンクは対象にしない。

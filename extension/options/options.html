@@ -7,39 +7,69 @@
   <link rel="stylesheet" href="options.css">
 </head>
 <body>
-  <h1>Tube My Filter</h1>
+  <header>
+    <h1>Tube My Filter</h1>
+    <span id="version" class="muted"></span>
+  </header>
 
-  <section>
-    <h2>モード</h2>
-    <div class="modes" role="radiogroup">
-      <label><input type="radio" name="mode" value="off"> 停止</label>
-      <label><input type="radio" name="mode" value="observe"> 判定のみ</label>
-      <label><input type="radio" name="mode" value="hide"> 非表示</label>
+  <section class="card">
+    <div class="segmented" role="radiogroup" aria-label="モード">
+      <label><input type="radio" name="mode" value="off"><span>停止</span></label>
+      <label><input type="radio" name="mode" value="observe"><span>判定のみ</span></label>
+      <label class="danger"><input type="radio" name="mode" value="hide"><span>非表示</span></label>
     </div>
-    <p class="note">対象: 検索結果・ホーム・再生ページの関連動画の通常動画カード（Shorts・ミックス・広告は対象外）。判定のみ: 一致は赤枠、未判定は灰色の点線枠（隠さない）。</p>
+    <p id="mode-help" class="help"></p>
   </section>
 
-  <section id="stats-section" hidden>
-    <h2>このタブの判定</h2>
-    <dl id="stats"></dl>
+  <section id="stats-section" class="card" hidden>
+    <div class="row-between">
+      <h2>このタブ</h2>
+      <span id="page-chip" class="chip"></span>
+    </div>
+    <p id="stats-note" class="help" hidden></p>
+    <div id="stats-tiles" class="tiles">
+      <div class="tile accent"><b id="st-matched">0</b><span>一致</span></div>
+      <div class="tile"><b id="st-hidden">0</b><span>非表示中</span></div>
+      <div class="tile"><b id="st-unknown">0</b><span>未判定</span></div>
+      <div class="tile"><b id="st-total">0</b><span>動画カード</span></div>
+    </div>
+    <p id="stats-detail" class="muted small"></p>
   </section>
 
-  <section>
-    <h2>チャンネルを登録</h2>
-    <form id="add-form">
-      <input id="add-input" type="text" autocomplete="off" spellcheck="false"
-             placeholder="@ハンドル / UC…のID / チャンネルURL" required>
-      <input id="add-label" type="text" autocomplete="off" placeholder="メモ（任意）">
-      <button type="submit">登録</button>
-    </form>
-    <p id="add-message" class="message" aria-live="polite"></p>
-    <p class="note">ハンドルとIDは別のルールです。検索結果のカードは主にハンドルで表示されるため、ハンドルでの登録を推奨します。</p>
-  </section>
-
-  <section>
-    <h2>登録済み（<span id="rule-count">0</span>）</h2>
+  <section class="card">
+    <div class="row-between">
+      <h2>非表示にするチャンネル <span id="rule-count" class="count">0</span></h2>
+    </div>
+    <input id="filter" type="search" placeholder="絞り込み" autocomplete="off" hidden>
     <ul id="rules"></ul>
+    <p id="empty" class="help">まだありません。下の「手動で追加」か、YouTubeの「⋮」メニューから追加できます。</p>
+
+    <details id="manual">
+      <summary>手動で追加</summary>
+      <form id="add-form">
+        <input id="add-input" type="text" autocomplete="off" spellcheck="false"
+               placeholder="@ハンドル / UC…のID / チャンネルURL" required>
+        <input id="add-label" type="text" autocomplete="off" placeholder="メモ（任意）">
+        <button type="submit" class="primary">追加</button>
+      </form>
+      <p id="add-message" class="message" aria-live="polite"></p>
+    </details>
   </section>
+
+  <section class="card">
+    <h2>追加オプション</h2>
+    <label class="toggle"><input type="checkbox" id="opt-hideShorts"><span>ショートの棚を非表示</span></label>
+    <p class="help">ホーム・検索結果などの「ショート」の棚をまるごと隠します（非表示モードのとき。判定のみでは赤い点線枠）。</p>
+  </section>
+
+  <section class="card">
+    <h2>YouTubeのメニューと連動</h2>
+    <p class="help">動画の「⋮」で次を選んだとき、その動画のチャンネルもこのリストに追加します。</p>
+    <label class="toggle"><input type="checkbox" id="cap-dontRecommend"><span>チャンネルをおすすめに表示しない</span></label>
+    <label class="toggle"><input type="checkbox" id="cap-notInterested"><span>興味なし</span></label>
+  </section>
+
+  <footer class="muted small">検索結果・ホーム・関連動画に対応（Shorts・広告は対象外）</footer>
 
   <script src="../lib/channel.js"></script>
   <script src="../lib/settings.js"></script>
